@@ -10,20 +10,26 @@ Plataforma financeira com **painel do profissional** e **painel da família**, i
 - Zod (validação), Vitest (testes)
 - ExcelJS / jsPDF (exportação XLSX e PDF)
 
-## Executar localmente
+## Executar localmente (VS Code)
 
-Requisitos: **Node.js 20+**.
+Requisitos: **Node.js 20+** (instalado globalmente) e um banco **PostgreSQL**.
+O `.env` local já aponta para o banco Neon usado em produção; se quiser um banco isolado, crie outro projeto/branch na Neon e troque apenas a `DATABASE_URL`.
 
-```bash
+1. Abra a pasta do projeto no VS Code (`File → Open Folder`).
+2. No terminal integrado (`Ctrl + ` `), execute:
+
+```powershell
 npm install
-cp .env.example .env        # Windows: copy .env.example .env
-# configure DATABASE_URL (Neon/PostgreSQL) e AUTH_SECRET no .env
-npm run db:migrate          # aplica as migrações
-npm run db:seed             # carrega os dados de demonstração
-npm run dev
+npm run db:migrate
+npm run db:seed     # opcional: dados de demonstração
 ```
 
-Acesse **http://localhost:3000**.
+3. Pressione **F5** (configuração *Patrimônia: iniciar servidor*) ou rode `npm run dev`.
+4. Acesse **http://localhost:3000**.
+
+Também há tasks prontas no menu **Terminal → Run Task** (`Instalar dependências`, `Aplicar migrações`, `Rodar testes`, `Build de produção`, etc.).
+
+> Ao usar o mesmo banco da produção, alterações feitas localmente aparecem no site publicado. Para desenvolver sem afetar a produção, use um banco separado.
 
 ### Produção
 
