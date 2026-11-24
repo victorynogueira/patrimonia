@@ -1,0 +1,295 @@
+// Schema portátil: SQLite para execução local; troque o provider por "postgresql"
+// e a DATABASE_URL para implantar em produção (tipos usados são compatíveis).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  globalRole   String   @default("MEMBER") // PROFESSIONAL | MEMBER
+  avatarColor  String   @default("#6366F1")
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownedFamilies   Family[]          @relation("FamilyOwner")
+  memberships     FamilyMember[]
+  sessions        Session[]
+  resetTokens     PasswordReset[]
+  invitesSent     Invite[]          @relation("InvitedBy")
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+  createdTx       Transaction[]     @relation("TransactionCreator")
+  uploadedDocs    Document[]        @relation("DocumentUploader")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Family {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  color       String   @default("#6366F1")
+  status      String   @default("ACTIVE") // ACTIVE | SUSPENDED
+  plan        String   @default("PRO")
+  features    String   @default("{}") // JSON de funcionalidades habilitadas
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner         User           @relation("FamilyOwner", fields: [ownerId], references: [id])
+  members       FamilyMember[]
+  invites       Invite[]
+  accounts      Account[]
+  categories    Category[]
+  transactions  Transaction[]
+  assets        Asset[]
+  budgets       Budget[]
+  goals         Goal[]
+  documents     Document[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+model FamilyMember {
+  id          String   @id @default(cuid())
+  familyId    String
+  userId      String
+  role        String   @default("MEMBER") // ADMIN | MANAGER | MEMBER | VIEWER
+  permissions String   @default("") // JSON: lista de overrides; "" = usar padrão da função
+  status      String   @default("ACTIVE") // ACTIVE | SUSPENDED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([familyId, userId])
+  @@index([familyId])
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  familyId    String
+  email       String
+  role        String    @default("MEMBER")
+  permissions String    @default("")
+  tokenHash   String    @unique
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  family    Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  invitedBy User   @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  @@index([familyId])
+}
+
+model Account {
+  id          String   @id @default(cuid())
+  familyId    String
+  name        String
+  type        String   @default("BANK") // BANK | INVESTMENT | CASH | CREDIT
+  institution String?
+  balanceCents Int     @default(0)
+  currency    String   @default("BRL")
+  color       String   @default("#6366F1")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  family       Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([familyId])
+}
+
+model Category {
+  id       String  @id @default(cuid())
+  familyId String
+  name     String
+  type     String  @default("EXPENSE") // INCOME | EXPENSE | PROFIT
+  color    String  @default("#6366F1")
+  icon     String  @default("circle")
+  isActive Boolean @default(true)
+
+  family       Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@unique([familyId, name, type])
+  @@index([familyId])
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  familyId      String
+  accountId     String?
+  categoryId    String?
+  type          String   // INCOME | EXPENSE | PROFIT | TRANSFER
+  amountCents   Int
+  description   String
+  notes         String?
+  date          DateTime
+  isRecurring   Boolean  @default(false)
+  recurrence    String?  // MONTHLY | QUARTERLY | YEARLY
+  createdById   String
+  documentId    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  family     Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  account    Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdBy  User      @relation("TransactionCreator", fields: [createdById], references: [id])
+  document   Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, date])
+  @@index([familyId, type])
+}
+
+model Asset {
+  id                   String   @id @default(cuid())
+  familyId             String
+  type                 String   // REAL_ESTATE | VEHICLE | INVESTMENT | BUSINESS | OTHER
+  name                 String
+  description          String?
+  acquisitionValueCents Int
+  currentValueCents    Int
+  acquisitionDate      DateTime
+  location             String?
+  documentId           String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  family     Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  document   Document?        @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  valuations AssetValuation[]
+
+  @@index([familyId])
+}
+
+model AssetValuation {
+  id       String   @id @default(cuid())
+  assetId  String
+  valueCents Int
+  date     DateTime @default(now())
+  notes    String?
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([assetId, date])
+}
+
+model Budget {
+  id          String   @id @default(cuid())
+  familyId    String
+  categoryId  String?
+  month       String   // YYYY-MM
+  limitCents  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  family   Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([familyId, categoryId, month])
+  @@index([familyId, month])
+}
+
+model Goal {
+  id           String   @id @default(cuid())
+  familyId     String
+  name         String
+  targetCents  Int
+  currentCents Int      @default(0)
+  deadline     DateTime?
+  color        String   @default("#10B981")
+  description  String?
+  completedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+}
+
+model Document {
+  id          String   @id @default(cuid())
+  familyId    String
+  name        String
+  mimeType    String
+  sizeBytes   Int
+  data        Bytes
+  uploadedById String
+  createdAt   DateTime @default(now())
+
+  family      Family        @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  uploadedBy  User          @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  transactions Transaction[]
+  assets      Asset[]
+
+  @@index([familyId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  familyId  String?
+  userId    String
+  title     String
+  body      String
+  type      String   @default("INFO") // INFO | ALERT | SUCCESS
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  family Family? @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  familyId  String?
+  actorId   String
+  action    String   // CREATE | UPDATE | DELETE | LOGIN | ...
+  entity    String
+  entityId  String?
+  details   String   @default("{}")
+  createdAt DateTime @default(now())
+
+  family Family? @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  actor  User    @relation(fields: [actorId], references: [id])
+
+  @@index([familyId, createdAt])
+}

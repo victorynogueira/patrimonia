@@ -1,0 +1,22 @@
+{
+  "name": "Patrimônia — Gestão Financeira Familiar",
+  "short_name": "Patrimônia",
+  "description": "Gestão financeira, lucros, despesas e patrimônio familiar.",
+  "lang": "pt-BR",
+  "start_url": "/app/admin",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080B12",
+  "theme_color": "#4F46E5",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Painel familiar", "short_name": "Família", "url": "/app/family", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Movimentações", "short_name": "Lançamentos", "url": "/app/family/transactions", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
