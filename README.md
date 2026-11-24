@@ -2,6 +2,8 @@
 
 Plataforma financeira com **painel do profissional** e **painel da família**, isolamento por família, RBAC granular, CRUD real, relatórios, insights automáticos, auditoria e PWA instalável.
 
+📘 **[Documentação completa de explicação e funcionamento](DOCUMENTACAO.md)** — arquitetura, modelos, API, RBAC, segurança, fluxos e limitações.
+
 ## Stack
 
 - Next.js 15 (App Router), React 19, TypeScript
@@ -45,9 +47,9 @@ Senha para todas: `Senha@123!`
 
 | E-mail | Perfil |
 | --- | --- |
-| `admin@patrimonia.app` | Profissional — administrador das 3 famílias |
-| `marina@exemplo.com` | Integrante (ADMIN da família Almeida) |
-| `joao@exemplo.com` | Integrante (MEMBER da família Almeida) |
+| `admin@patrimonia.app` | Profissional — owner das 3 famílias |
+| `marina@exemplo.com` | Integrante (`MEMBER` da família Almeida) |
+| `joao@exemplo.com` | Leitor (`VIEWER` da família Castro) |
 
 > Os convites pendentes são exibidos em **Admin → Usuários**. O link completo só é gerado no momento do convite e nunca é exposto depois.
 
