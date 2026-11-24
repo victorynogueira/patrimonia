@@ -25,7 +25,13 @@ npm run dev
 
 Acesse **http://localhost:3000**.
 
-Para deploy na Vercel, use um banco PostgreSQL gerenciado (Neon). O script `vercel-build` aplica as migrações automaticamente durante o build.
+### Produção
+
+A aplicação está publicada em:
+
+**https://patrimonia-pied.vercel.app**
+
+O deploy é feito na Vercel, com banco PostgreSQL gerenciado pela Neon. O repositório GitHub está conectado: cada push em `main` gera um novo deploy automaticamente. O script `vercel-build` aplica as migrações antes do build.
 
 ### Credenciais de demonstração
 
