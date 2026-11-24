@@ -1,11 +1,11 @@
-// Schema portátil: SQLite para execução local; troque o provider por "postgresql"
-// e a DATABASE_URL para implantar em produção (tipos usados são compatíveis).
+// Schema PostgreSQL (produção). Valores monetários em centavos e enums como String
+// para manter compatibilidade com o código existente.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

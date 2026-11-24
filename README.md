@@ -6,7 +6,7 @@ Plataforma financeira com **painel do profissional** e **painel da família**, i
 
 - Next.js 15 (App Router), React 19, TypeScript
 - Tailwind CSS 3, Recharts, lucide-react, sonner
-- Prisma 6 + SQLite (dev) — pronto para PostgreSQL
+- Prisma 6 + PostgreSQL (Neon em produção)
 - Zod (validação), Vitest (testes)
 - ExcelJS / jsPDF (exportação XLSX e PDF)
 
@@ -17,11 +17,15 @@ Requisitos: **Node.js 20+**.
 ```bash
 npm install
 cp .env.example .env        # Windows: copy .env.example .env
-npm run db:reset            # cria o banco e carrega os dados de demonstração
+# configure DATABASE_URL (Neon/PostgreSQL) e AUTH_SECRET no .env
+npm run db:migrate          # aplica as migrações
+npm run db:seed             # carrega os dados de demonstração
 npm run dev
 ```
 
 Acesse **http://localhost:3000**.
+
+Para deploy na Vercel, use um banco PostgreSQL gerenciado (Neon). O script `vercel-build` aplica as migrações automaticamente durante o build.
 
 ### Credenciais de demonstração
 
@@ -42,9 +46,11 @@ Senha para todas: `Senha@123!`
 | `npm run dev` | Servidor de desenvolvimento |
 | `npm run build` / `npm run start` | Build e servidor de produção |
 | `npm test` | Suíte Vitest (money, permissions, insights, validators) |
-| `npm run db:push` | Aplica o schema ao banco |
+| `npm run db:migrate` | Aplica migrações PostgreSQL |
+| `npm run db:push` | Sincroniza o schema diretamente (desenvolvimento) |
 | `npm run db:seed` | Carrega dados de demonstração |
 | `npm run db:reset` | Recria o banco e faz o seed |
+| `npm run vercel-build` | Migra + gera client + build (usado pela Vercel) |
 | `npm run icons` | Gera os ícones PWA em `public/icons` |
 
 ## Estrutura
@@ -81,22 +87,16 @@ public/sw.js             # Service worker (somente shell/assets, nunca /api/)
 
 `public/manifest.webmanifest` + `public/sw.js` + ícones em `public/icons`. Instalável via menu do navegador (Android/Chrome e iOS/Safari → *Adicionar à Tela de Início*). Notificações são usadas quando o navegador oferece suporte.
 
-## Migração para PostgreSQL
+## Banco de dados
 
-1. Instale o driver: `npm i @prisma/client@6.19.3 && npm i -D prisma@6.19.3` (já fixado).
-2. No `prisma/schema.prisma`, troque:
+O projeto usa **PostgreSQL**. Em produção, recomenda-se Neon (`https://neon.tech`):
 
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-```
+1. Crie um projeto Neon e copie a connection string.
+2. Defina `DATABASE_URL` no `.env` e nas variáveis de ambiente da Vercel.
+3. Rode `npm run db:migrate` e, se quiser os dados de demonstração, `npm run db:seed`.
 
-3. Atualize `DATABASE_URL` no `.env` para `postgresql://usuario:senha@host:5432/patrimonia`.
-4. Rode `npx prisma migrate dev --name init` e `npm run db:seed`.
-
-Os enums estão modelados como `String` e os valores como centavos, o que torna a troca de provider direta.
+A migração inicial está em `prisma/migrations/20261124000000_init/migration.sql`.
+Os enums são `String` e os valores monetários são centavos (`Int`).
 
 ## Testes
 
