@@ -4,6 +4,8 @@ Plataforma financeira com **painel do profissional** e **painel da família**, i
 
 📘 **[Documentação completa de explicação e funcionamento](DOCUMENTACAO.md)** — arquitetura, modelos, API, RBAC, segurança, fluxos e limitações.
 
+👥 **[Guia do usuário](GUIA_USUARIO.md)** — instruções passo a passo para profissionais e integrantes usarem o sistema.
+
 ## Stack
 
 - Next.js 15 (App Router), React 19, TypeScript

@@ -3,6 +3,7 @@
 > Documento de referência do projeto. Última atualização: **24/11/2026**.
 > Repositório: [github.com/victorynogueira/patrimonia](https://github.com/victorynogueira/patrimonia)
 > Produção: [patrimonia-pied.vercel.app](https://patrimonia-pied.vercel.app)
+> Para usuários finais, veja o **[Guia do usuário](GUIA_USUARIO.md)**.
 
 ---
 
